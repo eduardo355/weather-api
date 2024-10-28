@@ -18,7 +18,7 @@ export const getAddress = async (latitude, longitude) => {
     const residential = components.residential
 
     await client.set(
-      `${latitude}_${longitude}`,
+      `${latitude},${longitude}`,
       JSON.stringify({
         road,
         city,
@@ -69,7 +69,6 @@ export const getWeatherDataByCity = async (city) => {
 }
 
 export const getWeatherDataByCoordinates = async (latitude, longitude) => {
-  const cacheKey = `${latitude}_${longitude}`
   try {
     const cachedData = await client.get(cacheKey)
     if (cachedData) return JSON.parse(cachedData)
@@ -77,7 +76,12 @@ export const getWeatherDataByCoordinates = async (latitude, longitude) => {
     const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}?key=${process.env.KEY_WEATHER}`
     const response = await axios.get(url)
 
-    await client.set(cacheKey, JSON.stringify(response.data), 'EX', 3600)
+    await client.set(
+      `${latitude}_${longitude}`,
+      JSON.stringify(response.data),
+      'EX',
+      3600
+    )
 
     return response.data
   } catch (error) {
